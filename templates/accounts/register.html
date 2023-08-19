@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        /* Add some styling for the profile picture preview */
+        .profile-preview {
+            border: 2px solid #ddd;
+            padding: 5px;
+            margin-top: 10px;
+            max-width: 340px;
+            max-height: 350px;
+            overflow: hidden;
+            margin-left: 25px;
+        }
+
+        /* Adjust the preview image size to fit the container */
+        .profile-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            margin: auto;
+        }
+
+        /* Styling for the registration container */
+        .registration-container {
+            border: 2px solid #ccc;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+            margin-top: 80px;
+        }
+
+        /* Add margin top between elements */
+        .form-label {
+            margin-top: 10px;
+        }
+
+        /* Adjust margin for the profile picture input */
+        #profile_picture {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <h1>User Registration</h1><hr>
+        <form method="post" enctype="multipart/form-data" style="margin-bottom: 10px;">
+            {% csrf_token %}
+            <label class="form-label" for="username">Username:</label>
+            <input type="text" name="username" id="username" required>
+            <br>
+            <label class="form-label" for="password">Password:</label>
+            <input type="password" name="password" id="password" required style="margin-top: 10px;">
+            <br>
+            <label class="form-label" for="profile_picture">Profile Picture:</label>
+            <input type="file" name="profile_picture" id="profile_picture" accept="image/*" required>
+            <br>
+            <!-- Profile Picture Preview -->
+            <div class="profile-preview" id="profile-preview">
+                <img id="preview-image" src="">
+            </div>
+            <br>
+            <button type="submit">Register</button>
+            
+        </form>
+        <a href="{% url 'login' %}" ><button>Login</button></a>
+    </div>
+    
+
+    <script>
+        // JavaScript to handle profile picture preview
+        const profilePictureInput = document.getElementById('profile_picture');
+        const previewImage = document.getElementById('preview-image');
+
+        profilePictureInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.src = '';
+            }
+        });
+    </script>
+</body>
+</html>

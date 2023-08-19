@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User | Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Center content vertically and horizontally */
+        .center-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        /* Lighting animation */
+        .lighting-animation {
+            position: relative;
+            animation: lighting 1s ease-in-out infinite alternate;
+        }
+        
+        /* Define the animation keyframes */
+        @keyframes lighting {
+            0% {
+                text-shadow: 0px 0px 10px rgba(243, 204, 10, 0.8);
+            }
+            100% {
+                text-shadow: 0px 0px 15px rgb(246, 16, 16);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="center-content">
+        <div class="jumbotron text-center">
+            <h1 class="display-4 lighting-animation">Welcome, {{ request.user.username }}!</h1>
+            <p class="lead">Your Dashboard</p>
+            <h3>Now you are in  <br> <hr>{{ current_location }}</h3>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS (optional) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

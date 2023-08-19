@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Get Current Location</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <button id="get-location-btn">Get Location Name</button>
+    <div id="location-name"></div>
+
+    <script>
+        $(document).ready(function() {
+            $("#get-location-btn").click(function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var latitude = position.coords.latitude;
+                        var longitude = position.coords.longitude;
+                        $.ajax({
+                            type: "POST",
+                            url: "{% url 'get_location_name' %}",
+                            data: {
+                                'latitude': latitude,
+                                'longitude': longitude,
+                                csrfmiddlewaretoken: '{{ csrf_token }}'
+                            },
+                            success: function(response) {
+                                $('#location-name').text(response.location_name);
+                            }
+                        });
+                    });
+                } else {
+                    alert("Geolocation is not supported by this browser.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

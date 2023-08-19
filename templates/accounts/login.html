@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page with Camera</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+
+    #login-container {
+      border: 2px solid #ccc;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    #image-preview {
+      margin-top: 20px;
+      border: 2px dashed #aaa;
+      padding: 10px;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div>
+    
+  </div>
+  <div id="login-container">
+    {% for message in messages %}
+      <b>{{ message }}</b>
+      {% endfor %}
+    <h1>User Login</h1>
+    <hr>
+    <form id="login-form" method="POST">
+      {% csrf_token %}
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required style="margin-top: 10px;"><br><br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required><br><br>
+      <button type="button" id="take-picture">Take Picture</button>
+      <button type="button" id="retake-picture" style="display: none; margin-top: 10px;">Retake Picture</button>
+      <div id="image-preview"></div>
+      <button type="button" id="confirm-image" style="display: none; margin-top: 10px;">Confirm Image</button><br><br>
+      <!-- Add a hidden input field to capture the captured image -->
+      <input type="hidden" id="captured-image" name="captured_image">
+      <input type="hidden" id="current-location" name="current_location">
+      <input type="submit" value="Submit">
+      <a href="{% url 'register' %}" style="margin-top: 30px;"><button>Register</button></a>
+    </form>
+
+  </div>
+  <script>
+    const takePictureButton = document.getElementById("take-picture");
+    const retakePictureButton = document.getElementById("retake-picture");
+    const confirmImageButton = document.getElementById("confirm-image");
+    const imagePreview = document.getElementById("image-preview");
+    const capturedImageInput = document.getElementById("captured-image"); // Hidden input field
+
+    takePictureButton.addEventListener("click", async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        video.autoplay = true;
+
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = 320;
+        canvas.height = 240;
+
+        imagePreview.innerHTML = "";
+        imagePreview.appendChild(video);
+
+        takePictureButton.style.display = "none";
+        confirmImageButton.style.display = "inline";
+
+        confirmImageButton.addEventListener("click", () => {
+          capturedImage = canvas.toDataURL("image/png");
+          const img = document.createElement("img");
+          img.src = capturedImage;
+          img.alt = "Captured Image";
+          imagePreview.innerHTML = "";
+          imagePreview.appendChild(img);
+
+          // Set the captured image data to the hidden input field
+          capturedImageInput.value = capturedImage;
+
+          confirmImageButton.style.display = "none";
+          retakePictureButton.style.display = "inline";
+          takePictureButton.style.display = "none";
+          video.srcObject.getTracks().forEach(track => track.stop());
+        });
+        retakePictureButton.addEventListener("click", () => {
+          // Hide the Retake Picture button and show the Take Picture button
+          retakePictureButton.style.display = "none";
+          takePictureButton.style.display = "inline";
+          imagePreview.innerHTML = "";
+
+        });
+        video.addEventListener("play", () => {
+          const interval = setInterval(() => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          }, 16);
+
+          video.addEventListener("pause", () => {
+            clearInterval(interval);
+          });
+
+          video.addEventListener("ended", () => {
+            clearInterval(interval);
+          });
+        });
+      } catch (error) {
+        console.error("Error accessing camera:", error);
+      }
+
+    });
+
+    const loginForm = document.getElementById("login-form");
+    const currentLocationInput = document.getElementById("current-location");
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault(); // Prevent the default form submission
+
+      try {
+        // Get the user's current location
+        const location = await getCurrentLocation();
+        currentLocationInput.value = location;
+
+        // Submit the form
+        loginForm.submit();
+      } catch (error) {
+        console.error("Error getting current location:", error);
+      }
+    });
+
+    async function getCurrentLocation() {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const latitude = position.coords.latitude;
+              const longitude = position.coords.longitude;
+              const locationName = await getLocationName(latitude, longitude);
+              resolve(locationName);
+            },
+            (error) => {
+              reject(error);
+            }
+          );
+        } else {
+          reject("Geolocation is not supported by this browser.");
+        }
+      });
+    }
+
+    async function getLocationName(latitude, longitude) {
+      return new Promise((resolve, reject) => {
+        $.ajax({
+          type: "POST",
+          url: "{% url 'get_location_name' %}",
+          data: {
+            'latitude': latitude,
+            'longitude': longitude,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+          },
+          success: function (response) {
+            resolve(response.location_name);
+          },
+          error: function (error) {
+            reject(error);
+          }
+        });
+      });
+
+    }
+  </script>
+</body>
+
+</html>
